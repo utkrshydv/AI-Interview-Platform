@@ -1,4 +1,4 @@
-from models.interview import InterviewSession
+from models.interview import InterviewSession, Answer, InterviewEnumStatus
 from storage.session_store import SESSION_STORE
 import uuid
 
@@ -15,10 +15,26 @@ def create_session() -> InterviewSession:
 
 
 def get_session(session_id: str) -> InterviewSession:
-  session = SESSION_STORE(session_id)
+  session = SESSION_STORE.get(session_id)
 
   if not session:
     return None
 
   return session
+
+def save_answer(answer: str | None, skip: bool, session: InterviewSession):
+  question = session.questions[session.current_index]
+  session.answers.append(
+    Answer(
+      question=question,
+      answer=None if skip else answer,
+      skip=skip
+    )
+  )
+  session.current_index += 1
+
+  if session.current_index == len(session.questions):
+    session.status = InterviewEnumStatus.COMPLETED
+
+  
 
